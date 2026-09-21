@@ -1,0 +1,35 @@
+import json
+import pandas as pd
+
+
+def excel_to_json(excel_path: str, json_path: str):
+  # Read Excel file
+  df = pd.read_excel(excel_path)
+
+  # 1. Strip trailing/leading whitespace from column names
+  df.columns = df.columns.astype(str).str.strip()
+
+  # 2. Drop completely empty rows and columns
+  df = df.dropna(how="all").dropna(axis=1, how="all")
+
+  # 3. Replace NaN with None and strip whitespace from string data
+  df = df.where(pd.notnull(df), None)
+
+  for col in df.select_dtypes(include=["object"]).columns:
+    df[col] = df[col].apply(lambda x: x.strip() if isinstance(x, str) else x)
+
+  # Convert DataFrame to a list of dictionaries
+  data = df.to_dict(orient="records")
+
+  # Save to JSON file with clean indentation
+  with open(json_path, "w", encoding="utf-8") as f:
+    json.dump(data, f, ensure_ascii=False, indent=4)
+
+  print(
+      f"✅ Garbage cleaned! File successfully converted and saved as:"
+      f" {json_path}"
+  )
+  #HOW TO RUN
+  #INSTALL PYTHON & JSON
+  #RUN SCRIPT
+  #EXAMPLE: excel_to_json(your_path, your_path
